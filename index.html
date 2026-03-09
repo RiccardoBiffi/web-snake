@@ -12,11 +12,13 @@
         <header class="panel__header">
           <div>
             <h1 id="game-title">Snake</h1>
-            <p id="status" class="status">Press Start, an arrow key, or a control button.</p>
+            <p id="status" class="status">Press Start or choose a direction to begin.</p>
           </div>
-          <div class="scoreboard" aria-live="polite">
-            <span class="scoreboard__label">Score</span>
-            <strong id="score" class="scoreboard__value">0</strong>
+          <div class="panel__meta">
+            <div class="scoreboard" aria-live="polite">
+              <span class="scoreboard__label">Score</span>
+              <strong id="score" class="scoreboard__value">0</strong>
+            </div>
           </div>
         </header>
 
@@ -25,8 +27,68 @@
         </div>
 
         <div class="actions">
-          <button id="pause-button" type="button">Start</button>
-          <button id="restart-button" type="button">Restart</button>
+          <div class="actions__primary">
+            <button id="pause-button" type="button">Start</button>
+            <button id="restart-button" type="button">Restart</button>
+          </div>
+          <div class="actions__secondary">
+            <button
+              id="settings-toggle"
+              class="icon-button"
+              type="button"
+              aria-controls="settings-modal"
+              aria-expanded="false"
+              aria-label="Open settings"
+            >
+              &#9881;
+            </button>
+          </div>
+        </div>
+
+        <div id="settings-modal" class="settings-modal" hidden>
+          <section
+            id="settings-panel"
+            class="settings"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="settings-title"
+          >
+            <div class="settings__header">
+              <h2 id="settings-title">Settings</h2>
+            </div>
+            <div class="settings__grid">
+              <label class="setting" for="difficulty-select">
+                <span class="setting__label">Difficulty</span>
+                <select id="difficulty-select" name="difficulty">
+                  <option value="slow">Slow</option>
+                  <option value="normal" selected>Normal</option>
+                  <option value="fast">Fast</option>
+                </select>
+              </label>
+
+              <label class="setting" for="color-pattern-select">
+                <span class="setting__label">Color pattern</span>
+                <select id="color-pattern-select" name="colorPattern">
+                  <option value="classic" selected>Classic</option>
+                  <option value="sunset">Sunset</option>
+                  <option value="forest">Forest</option>
+                </select>
+              </label>
+
+              <label class="setting" for="grid-dimension-select">
+                <span class="setting__label">Grid dimension</span>
+                <select id="grid-dimension-select" name="gridDimension">
+                  <option value="small">Small</option>
+                  <option value="normal" selected>Normal</option>
+                  <option value="big">Big</option>
+                </select>
+              </label>
+            </div>
+            <div class="settings__actions">
+              <button id="settings-cancel-button" type="button">Cancel</button>
+              <button id="settings-apply-button" type="button">Confirm</button>
+            </div>
+          </section>
         </div>
 
         <div class="controls" aria-label="Directional controls">
@@ -36,7 +98,7 @@
           <button type="button" class="control control--right" data-direction="right" aria-label="Move right">→</button>
         </div>
 
-        <p class="help">Use arrow keys or WASD to move. Press Space or P to pause.</p>
+        <p id="help" class="help">Use arrow keys or WASD to move. Press Space or P to pause.</p>
       </section>
     </main>
 

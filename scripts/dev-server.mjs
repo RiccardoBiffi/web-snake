@@ -1,6 +1,8 @@
 import { createReadStream, existsSync, statSync } from "node:fs";
-import { extname, isAbsolute, join, normalize, relative } from "node:path";
+import { fileURLToPath, pathToFileURL } from "node:url";
+import { dirname, extname, isAbsolute, join, normalize, relative } from "node:path";
 import { createServer } from "node:http";
+import { networkInterfaces } from "node:os";
 
 const MIME_TYPES = {
   ".css": "text/css; charset=utf-8",
@@ -10,38 +12,85 @@ const MIME_TYPES = {
   ".svg": "image/svg+xml"
 };
 
-const root = normalize(process.cwd());
-const port = Number(process.env.PORT ?? 3000);
+export const defaultRoot = normalize(join(dirname(fileURLToPath(import.meta.url)), ".."));
 
-const server = createServer((request, response) => {
-  const pathname = request.url?.split("?")[0] ?? "/";
-  const relativePath = pathname === "/" ? "index.html" : pathname.replace(/^\/+/, "");
-  let filePath = normalize(join(root, relativePath));
-  const relativeToRoot = relative(root, filePath);
+export function createRequestHandler(root = defaultRoot) {
+  const normalizedRoot = normalize(root);
 
-  if (relativeToRoot.startsWith("..") || isAbsolute(relativeToRoot)) {
-    response.writeHead(403, { "Content-Type": "text/plain; charset=utf-8" });
-    response.end("Forbidden");
-    return;
+  return (request, response) => {
+    const pathname = request.url?.split("?")[0] ?? "/";
+    const relativePath = pathname === "/" ? "index.html" : pathname.replace(/^\/+/, "");
+    let filePath = normalize(join(normalizedRoot, relativePath));
+    const relativeToRoot = relative(normalizedRoot, filePath);
+
+    if (relativeToRoot.startsWith("..") || isAbsolute(relativeToRoot)) {
+      response.writeHead(403, { "Content-Type": "text/plain; charset=utf-8" });
+      response.end("Forbidden");
+      return;
+    }
+
+    if (existsSync(filePath) && statSync(filePath).isDirectory()) {
+      filePath = join(filePath, "index.html");
+    }
+
+    if (!existsSync(filePath)) {
+      response.writeHead(404, { "Content-Type": "text/plain; charset=utf-8" });
+      response.end("Not found");
+      return;
+    }
+
+    const extension = extname(filePath);
+    const contentType = MIME_TYPES[extension] ?? "application/octet-stream";
+
+    response.writeHead(200, { "Content-Type": contentType });
+    createReadStream(filePath).pipe(response);
+  };
+}
+
+export function startServer({
+  root = defaultRoot,
+  port = Number(process.env.PORT ?? 3000),
+  host = process.env.HOST ?? "0.0.0.0"
+} = {}) {
+  const server = createServer(createRequestHandler(root));
+
+  server.listen(port, host, () => {
+    for (const url of getServerUrls(host, port)) {
+      console.log(`Snake dev server running at ${url}`);
+    }
+  });
+
+  return server;
+}
+
+export function getServerUrls(listenHost, listenPort) {
+  if (listenHost !== "0.0.0.0" && listenHost !== "::") {
+    return [formatUrl(listenHost, listenPort)];
   }
 
-  if (existsSync(filePath) && statSync(filePath).isDirectory()) {
-    filePath = join(filePath, "index.html");
+  const urls = new Set([formatUrl("127.0.0.1", listenPort)]);
+
+  for (const addresses of Object.values(networkInterfaces())) {
+    for (const address of addresses ?? []) {
+      if (address.internal || address.family !== "IPv4") {
+        continue;
+      }
+
+      urls.add(formatUrl(address.address, listenPort));
+    }
   }
 
-  if (!existsSync(filePath)) {
-    response.writeHead(404, { "Content-Type": "text/plain; charset=utf-8" });
-    response.end("Not found");
-    return;
-  }
+  return Array.from(urls);
+}
 
-  const extension = extname(filePath);
-  const contentType = MIME_TYPES[extension] ?? "application/octet-stream";
+function formatUrl(address, listenPort) {
+  return `http://${address}:${listenPort}`;
+}
 
-  response.writeHead(200, { "Content-Type": contentType });
-  createReadStream(filePath).pipe(response);
-});
+if (isMainModule()) {
+  startServer();
+}
 
-server.listen(port, "127.0.0.1", () => {
-  console.log(`Snake dev server running at http://127.0.0.1:${port}`);
-});
+function isMainModule() {
+  return process.argv[1] ? import.meta.url === pathToFileURL(process.argv[1]).href : false;
+}

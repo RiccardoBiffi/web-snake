@@ -3,6 +3,7 @@ import test from "node:test";
 
 import {
   createGameState,
+  restartGame,
   placeFood,
   setDirection,
   stepGame
@@ -123,4 +124,28 @@ test("placeFood chooses only from open cells", () => {
   });
 
   assert.deepEqual(food, { x: 1, y: 1 });
+});
+
+test("restartGame can reset the board with a different dimension", () => {
+  const state = createGameState({
+    width: 16,
+    height: 16,
+    score: 5,
+    status: "running"
+  });
+
+  const nextState = restartGame(state, {
+    width: 20,
+    height: 20
+  });
+
+  assert.equal(nextState.width, 20);
+  assert.equal(nextState.height, 20);
+  assert.equal(nextState.score, 0);
+  assert.equal(nextState.status, "ready");
+  assert.deepEqual(nextState.snake, [
+    { x: 10, y: 10 },
+    { x: 9, y: 10 },
+    { x: 8, y: 10 }
+  ]);
 });
