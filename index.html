@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Snake</title>
+    <link rel="stylesheet" href="./styles.css">
+  </head>
+  <body>
+    <main class="shell">
+      <section class="panel" aria-labelledby="game-title">
+        <header class="panel__header">
+          <div>
+            <h1 id="game-title">Snake</h1>
+            <p id="status" class="status">Press Start, an arrow key, or a control button.</p>
+          </div>
+          <div class="scoreboard" aria-live="polite">
+            <span class="scoreboard__label">Score</span>
+            <strong id="score" class="scoreboard__value">0</strong>
+          </div>
+        </header>
+
+        <div class="board-shell">
+          <div id="board" class="board" role="grid" aria-label="Snake game board"></div>
+        </div>
+
+        <div class="actions">
+          <button id="pause-button" type="button">Start</button>
+          <button id="restart-button" type="button">Restart</button>
+        </div>
+
+        <div class="controls" aria-label="Directional controls">
+          <button type="button" class="control control--up" data-direction="up" aria-label="Move up">↑</button>
+          <button type="button" class="control control--left" data-direction="left" aria-label="Move left">←</button>
+          <button type="button" class="control control--down" data-direction="down" aria-label="Move down">↓</button>
+          <button type="button" class="control control--right" data-direction="right" aria-label="Move right">→</button>
+        </div>
+
+        <p class="help">Use arrow keys or WASD to move. Press Space or P to pause.</p>
+      </section>
+    </main>
+
+    <script type="module" src="./src/main.js"></script>
+  </body>
+</html>
