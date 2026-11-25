@@ -17,4 +17,4 @@ Thumbs.db
 .idea/
 .vscode/*
 !.vscode/settings.json
-/.agents/tasks/
+/agents/tasks/
